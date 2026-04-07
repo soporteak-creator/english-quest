@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>English Quest ⚔️</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6c63ff;
+      --success: #06d6a0;
+      --danger:  #ef233c;
+      --gold:    #ffd166;
+      --bg:      #0d0d2b;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* ===== SCREENS ===== */
+    .screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      overflow-y: auto;
+    }
+    .screen.active { opacity: 1; pointer-events: all; }
+
+    /* ===== STARFIELD ===== */
+    #starfield { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+    .star {
+      position: absolute; background: #fff; border-radius: 50%;
+      animation: twinkle var(--d, 3s) ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: .2; transform: scale(1); }
+      50%       { opacity: 1;  transform: scale(1.4); }
+    }
+
+    /* ===== SHARED ANIMATIONS ===== */
+    @keyframes float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes pop-in { 0%{transform:scale(0)}100%{transform:scale(1)} }
+    @keyframes shimmer{ 0%{background-position:0% 50%}100%{background-position:300% 50%} }
+    @keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
+    @keyframes star-pop{ 0%{transform:scale(0) rotate(-180deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+    @keyframes confetti-fall{ 0%{transform:translateY(-80px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+    .bounce-anim { animation: bounce 2s ease-in-out infinite; }
+    .float-anim  { animation: float  3s ease-in-out infinite; }
+    .shake-me    { animation: shake  .5s ease; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      padding: 15px 28px; border: none; border-radius: 16px;
+      font-size: 17px; font-weight: 700; cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      width: 100%; text-align: center;
+    }
+    .btn:active { transform: scale(.97) !important; }
+    .btn-primary {
+      background: linear-gradient(135deg, #6c63ff, #c77dff);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108,99,255,.4);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(108,99,255,.6); }
+    .btn-secondary {
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.85);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.18); }
+
+    /* ===== HOME ===== */
+    #s-home { background: radial-gradient(ellipse at center,#1a1a4e 0%,#0d0d2b 70%); }
+
+    .home-inner { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+
+    .logo-icon  { font-size: 80px; display: block; line-height: 1; animation: float 3s ease-in-out infinite; }
+    .logo-title {
+      font-size: 42px; font-weight: 900; text-align: center;
+      background: linear-gradient(90deg,#ffd166,#ef233c,#c77dff,#6c63ff);
+      background-size: 300%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+    .logo-sub { font-size: 15px; color: rgba(255,255,255,.65); text-align: center; }
+
+    .form-card {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+      border-radius: 24px; padding: 26px; width: 100%;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    .field-label { font-size: 13px; color: rgba(255,255,255,.65); margin-bottom: 8px; display: block; }
+    .text-input {
+      width: 100%; padding: 13px 16px;
+      background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.2);
+      border-radius: 13px; color: #fff; font-size: 17px; outline: none;
+      transition: border-color .2s;
+    }
+    .text-input:focus { border-color: #6c63ff; }
+    .text-input::placeholder { color: rgba(255,255,255,.38); }
+
+    .char-grid { display: flex; gap: 10px; }
+    .char-btn {
+      flex: 1; padding: 14px 6px; cursor: pointer;
+      background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.14);
+      border-radius: 16px; color: #fff; transition: all .2s;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .char-btn:hover  { background: rgba(255,255,255,.14); transform: translateY(-2px); }
+    .char-btn.sel    { border-color: #6c63ff; background: rgba(108,99,255,.25); box-shadow: 0 0 18px rgba(108,99,255,.4); }
+    .char-emoji { font-size: 38px; line-height: 1; }
+    .char-name  { font-size: 12px; color: rgba(255,255,255,.8); }
+
+    /* ===== MAP ===== */
+    #s-map {
+      background: radial-gradient(ellipse at top,#1a1a4e 0%,#0d0d2b 70%);
+      justify-content: flex-start; padding-top: 0; gap: 0;
+    }
+    .map-topbar {
+      width: 100%; max-width: 560px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; margin-bottom: 4px;
+    }
+    .player-badge {
+      display: flex; align-items: center; gap: 9px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+      padding: 7px 14px; border-radius: 40px;
+    }
+    .pb-emoji { font-size: 26px; }
+    .pb-name  { font-size: 14px; font-weight: 600; }
+    .score-badge {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(255,209,102,.14); border: 1px solid rgba(255,209,102,.3);
+      padding: 7px 14px; border-radius: 40px;
+      font-size: 15px; font-weight: 700; color: var(--gold);
+    }
+    .map-title { font-size: 22px; font-weight: 800; margin-bottom: 16px; text-align: center; }
+    .zones-grid {
+      width: 100%; max-width: 560px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .zone-card {
+      border-radius: 20px; padding: 18px 14px;
+      cursor: pointer; transition: all .22s;
+      position: relative; overflow: hidden;
+      border: 2px solid transparent;
+      min-height: 148px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    }
+    .zone-card:not(.locked):hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 30px rgba(0,0,0,.4); }
+    .zone-card.locked { filter: grayscale(.75) brightness(.45); cursor: not-allowed; }
+    .zc-emoji { font-size: 44px; line-height: 1; }
+    .zc-name  { font-size: 14px; font-weight: 700; text-align: center; }
+    .zc-theme { font-size: 11px; color: rgba(255,255,255,.82); text-align: center; }
+    .zc-stars { font-size: 18px; letter-spacing: 2px; }
+    .lock-icon { position: absolute; top: 10px; right: 10px; font-size: 18px; }
+    .cleared-tag {
+      position: absolute; top: 7px; right: 7px;
+      background: rgba(6,214,160,.28); border: 1px solid #06d6a0;
+      border-radius: 8px; padding: 1px 7px; font-size: 10px;
+      color: #06d6a0; font-weight: 700;
+    }
+
+    /* ===== INTRO ===== */
+    #s-intro { background: radial-gradient(ellipse at center,#1a1a4e 0%,#0d0d2b 70%); }
+    .intro-inner { width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+    .zone-eyebrow  { font-size: 12px; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,.55); }
+    .intro-zname   { font-size: 30px; font-weight: 900; }
+    .intro-tag     { background: rgba(255,255,255,.1); padding: 5px 14px; border-radius: 20px; font-size: 13px; color: rgba(255,255,255,.8); }
+    .vs-row        { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; margin: 8px 0; }
+    .vs-side       { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .big-sprite    { font-size: 70px; line-height: 1; }
+    .vs-label      { font-size: 13px; color: rgba(255,255,255,.8); font-weight: 600; }
+    .vs-hearts     { font-size: 14px; letter-spacing: 1px; }
+    .vs-divider    { font-size: 26px; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px rgba(255,209,102,.7); }
+    .intro-btns    { display: flex; flex-direction: column; gap: 11px; width: 100%; }
+
+    /* ===== BATTLE ===== */
+    #s-battle {
+      justify-content: flex-start; padding: 0;
+      background: radial-gradient(ellipse at top,#0d2b1a 0%,#1b4332 100%);
+      transition: background .4s ease;
+    }
+
+    .battle-topbar {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: rgba(0,0,0,.35); backdrop-filter: blur(10px);
+      flex-shrink: 0;
+    }
+    .bt-side { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .bt-side.right { justify-content: flex-end; flex-direction: row-reverse; }
+    .bt-char { font-size: 26px; }
+    .bt-info { display: flex; flex-direction: column; gap: 2px; }
+    .bt-name   { font-size: 11px; color: rgba(255,255,255,.6); font-weight: 600; }
+    .bt-hearts { font-size: 14px; letter-spacing: 1px; min-height: 18px; }
+    .bt-zone-icon { font-size: 22px; padding: 0 10px; color: rgba(255,255,255,.8); }
+
+    .battle-body {
+      flex: 1; width: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: space-evenly; padding: 10px 16px 16px;
+      overflow: hidden;
+    }
+
+    .sprites-row {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      width: 100%; max-width: 480px;
+    }
+    .sp-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .sp-emoji { font-size: 60px; line-height: 1; }
+    .sp-name  { font-size: 11px; color: rgba(255,255,255,.65); }
+
+    .q-counter { font-size: 12px; color: rgba(255,255,255,.55); font-weight: 600; text-align: center; margin-bottom: 6px; }
+    .q-bubble {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      border-radius: 18px; padding: 16px 20px;
+      width: 100%; max-width: 480px; text-align: center;
+    }
+    .q-text { font-size: 19px; font-weight: 700; line-height: 1.4; }
+
+    .opts-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 11px;
+      width: 100%; max-width: 480px;
+    }
+    .opt-btn {
+      padding: 17px 10px; border: 2px solid transparent;
+      border-radius: 15px; font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .2s;
+    }
+    .opt-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+    .opt-btn:disabled { cursor: default; }
+    .opt-btn:nth-child(1){ background: linear-gradient(135deg,#4361ee,#4cc9f0); color:#fff; }
+    .opt-btn:nth-child(2){ background: linear-gradient(135deg,#06d6a0,#0ecb94); color:#fff; }
+    .opt-btn:nth-child(3){ background: linear-gradient(135deg,#ffd166,#ff9f1c); color:#333; }
+    .opt-btn:nth-child(4){ background: linear-gradient(135deg,#ef233c,#d62839); color:#fff; }
+
+    .opt-btn.correct { box-shadow: 0 0 28px rgba(6,214,160,.9); animation: correct-flash .45s ease; }
+    .opt-btn.wrong   { animation: wrong-shake .45s ease; opacity: .4; }
+    @keyframes correct-flash { 0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)} }
+    @keyframes wrong-shake   { 0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)} }
+
+    /* ===== FEEDBACK OVERLAY ===== */
+    .feedback-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.72); backdrop-filter: blur(5px);
+      gap: 14px; text-align: center; padding: 24px;
+      opacity: 0; pointer-events: none; transition: opacity .18s;
+    }
+    .feedback-overlay.show { opacity: 1; pointer-events: all; }
+    .fb-icon  { font-size: 82px; animation: pop-in .3s cubic-bezier(.68,-.55,.265,1.55); }
+    .fb-title { font-size: 30px; font-weight: 900; }
+    .fb-title.ok  { color: #06d6a0; }
+    .fb-title.bad { color: #ef233c; }
+    .fb-hint  { font-size: 15px; color: rgba(255,255,255,.8); max-width: 300px; }
+
+    /* ===== ZONE WIN ===== */
+    #s-zone-win { background: radial-gradient(ellipse at center,#163b2e 0%,#0d2b1f 70%); }
+    .zwin-inner {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 18px; text-align: center; max-width: 440px; width: 100%;
+    }
+    .zwin-celebrate { font-size: 78px; animation: float 2s ease-in-out infinite; }
+    .zwin-title     { font-size: 34px; font-weight: 900; color: #06d6a0; }
+    .defeated-wrap  { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .defeated-emoji { font-size: 54px; filter: grayscale(1); opacity: .55; }
+    .defeated-text  { font-size: 15px; color: rgba(255,255,255,.8); }
+    .stars-row      { display: flex; gap: 10px; justify-content: center; }
+    .star-item      { font-size: 46px; animation: star-pop .4s cubic-bezier(.68,-.55,.265,1.55) both; }
+    .star-item:nth-child(1){ animation-delay: .1s; }
+    .star-item:nth-child(2){ animation-delay: .3s; }
+    .star-item:nth-child(3){ animation-delay: .5s; }
+    .pts-earned     { font-size: 20px; font-weight: 700; color: var(--gold); }
+    .zwin-btns      { display: flex; flex-direction: column; gap: 11px; width: 100%; }
+
+    /* ===== GAME OVER ===== */
+    #s-gameover { background: radial-gradient(ellipse at center,#4a1818 0%,#2b0d0d 70%); }
+    .go-inner { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; max-width: 380px; }
+    .go-icon  { font-size: 80px; }
+    .go-title { font-size: 40px; font-weight: 900; color: #ef233c; }
+    .go-msg   { font-size: 16px; color: rgba(255,255,255,.8); line-height: 1.5; }
+    .go-btns  { display: flex; flex-direction: column; gap: 11px; width: 100%; }
+
+    /* ===== FINAL WIN ===== */
+    #s-win { background: radial-gradient(ellipse at center,#3b2e0a 0%,#1e1505 70%); overflow: hidden; }
+    .fw-inner {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 18px; text-align: center; max-width: 460px; z-index: 1;
+    }
+    .trophy     { font-size: 96px; animation: float 2s ease-in-out infinite; }
+    .fw-title   {
+      font-size: 38px; font-weight: 900;
+      background: linear-gradient(90deg,#ffd166,#f4a261,#ffd166);
+      background-size: 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: shimmer 2s linear infinite;
+    }
+    .fw-name    { font-size: 19px; color: rgba(255,255,255,.9); }
+    .fw-scorebox{
+      background: rgba(255,209,102,.14); border: 2px solid rgba(255,209,102,.4);
+      border-radius: 20px; padding: 14px 30px;
+      font-size: 26px; font-weight: 900; color: var(--gold);
+    }
+    .fw-zones   { font-size: 22px; letter-spacing: 4px; }
+    .fw-sub     { font-size: 14px; color: rgba(255,255,255,.6); }
+    .confetti-piece {
+      position: absolute; border-radius: 2px;
+      animation: confetti-fall linear both;
+    }
+    #confetti-container { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+
+    /* ===== FOOTER ===== */
+    .site-footer {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      text-align: center; padding: 8px 16px;
+      font-size: 12px; color: rgba(255,255,255,.38);
+      pointer-events: none;
+      letter-spacing: .3px;
+    }
+    .site-footer a {
+      color: rgba(255,255,255,.55); text-decoration: none;
+      pointer-events: all;
+      transition: color .2s;
+    }
+    .site-footer a:hover { color: #ef233c; }
+    .site-footer .heart { color: #ef233c; display: inline-block; animation: heartbeat 1.4s ease-in-out infinite; }
+    @keyframes heartbeat {
+      0%,100%{ transform: scale(1); }
+      14%    { transform: scale(1.3); }
+      28%    { transform: scale(1); }
+      42%    { transform: scale(1.2); }
+      70%    { transform: scale(1); }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-height: 680px) {
+      .logo-icon  { font-size: 54px; }
+      .logo-title { font-size: 32px; }
+      .form-card  { padding: 18px; gap: 13px; }
+      .char-emoji { font-size: 30px; }
+      .sp-emoji   { font-size: 48px; }
+      .q-text     { font-size: 17px; }
+      .opt-btn    { padding: 13px 8px; font-size: 15px; }
+    }
+    @media (max-width: 380px) {
+      .zc-emoji { font-size: 34px; }
+      .zc-name  { font-size: 12px; }
+      .zone-card{ min-height: 120px; padding: 12px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ───── STARFIELD ───── -->
+<div id="starfield"></div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: HOME                           -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen active" id="s-home">
+  <div class="home-inner">
+    <div>
+      <span class="logo-icon">⚔️</span>
+      <h1 class="logo-title">English Quest</h1>
+      <p class="logo-sub">¡Aprende inglés en una aventura épica!</p>
+    </div>
+
+    <div class="form-card">
+      <div>
+        <label class="field-label">¿Cómo te llamas?</label>
+        <input class="text-input" id="name-input" type="text"
+               placeholder="Escribe tu nombre..." maxlength="12" autocomplete="off">
+      </div>
+
+      <div>
+        <label class="field-label">Elige tu personaje:</label>
+        <div class="char-grid">
+          <button class="char-btn sel" data-char="0">
+            <span class="char-emoji">🧒</span>
+            <span class="char-name">Héroe</span>
+          </button>
+          <button class="char-btn" data-char="1">
+            <span class="char-emoji">🧝‍♀️</span>
+            <span class="char-name">Elfa</span>
+          </button>
+          <button class="char-btn" data-char="2">
+            <span class="char-emoji">🦸</span>
+            <span class="char-name">Súper</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-start">¡Comenzar aventura! 🗡️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: MAP                            -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen" id="s-map">
+  <div class="map-topbar">
+    <div class="player-badge">
+      <span class="pb-emoji" id="map-char">🧒</span>
+      <span class="pb-name"  id="map-name">Jugador</span>
+    </div>
+    <div class="score-badge">⭐ <span id="map-score">0</span></div>
+  </div>
+  <h2 class="map-title">🗺️ Mapa del Mundo</h2>
+  <div class="zones-grid" id="zones-grid"></div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: ZONE INTRO                     -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen" id="s-intro">
+  <div class="intro-inner">
+    <span class="zone-eyebrow">Zona</span>
+    <h2 class="intro-zname" id="intro-zname">Bosque Encantado</h2>
+    <span class="intro-tag" id="intro-tag">Animales y Colores</span>
+
+    <div class="vs-row">
+      <div class="vs-side">
+        <span class="big-sprite" id="intro-player">🧒</span>
+        <span class="vs-label"   id="intro-pname">Tú</span>
+        <span class="vs-hearts">❤️❤️❤️</span>
+      </div>
+      <span class="vs-divider">VS</span>
+      <div class="vs-side">
+        <span class="big-sprite bounce-anim" id="intro-monster">🐉</span>
+        <span class="vs-label"              id="intro-mname">Dragón Hoja</span>
+        <span class="vs-hearts"             id="intro-mhp">❤️❤️❤️❤️❤️</span>
+      </div>
+    </div>
+
+    <div class="intro-btns">
+      <button class="btn btn-primary"   id="btn-fight">⚔️ ¡A Luchar!</button>
+      <button class="btn btn-secondary" id="btn-back-intro">← Volver al Mapa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: BATTLE                         -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen" id="s-battle">
+  <!-- Top bar -->
+  <div class="battle-topbar">
+    <div class="bt-side">
+      <span class="bt-char" id="b-pchar">🧒</span>
+      <div class="bt-info">
+        <span class="bt-name"   id="b-pname">Tú</span>
+        <span class="bt-hearts" id="b-php">❤️❤️❤️</span>
+      </div>
+    </div>
+    <span class="bt-zone-icon" id="b-zicon">🌿</span>
+    <div class="bt-side right">
+      <div class="bt-info" style="align-items:flex-end">
+        <span class="bt-name"   id="b-mname">Dragón</span>
+        <span class="bt-hearts" id="b-mhp">❤️❤️❤️❤️❤️</span>
+      </div>
+      <span class="bt-char" id="b-mchar">🐉</span>
+    </div>
+  </div>
+
+  <!-- Battle body -->
+  <div class="battle-body">
+    <!-- Sprites row -->
+    <div class="sprites-row">
+      <div class="sp-wrap">
+        <span class="sp-emoji" id="b-psprite">🧒</span>
+        <span class="sp-name"  id="b-psname">Tú</span>
+      </div>
+      <div style="text-align:center">
+        <div class="q-counter" id="b-progress">1 / 5</div>
+      </div>
+      <div class="sp-wrap">
+        <span class="sp-emoji bounce-anim" id="b-msprite">🐉</span>
+        <span class="sp-name"             id="b-msname">Dragón</span>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <div class="q-bubble">
+      <div class="q-text" id="b-qtext">¿Qué animal es este? 🐱</div>
+    </div>
+
+    <!-- Options -->
+    <div class="opts-grid" id="opts-grid">
+      <button class="opt-btn" data-idx="0">Cat</button>
+      <button class="opt-btn" data-idx="1">Dog</button>
+      <button class="opt-btn" data-idx="2">Bird</button>
+      <button class="opt-btn" data-idx="3">Fish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- FEEDBACK OVERLAY                       -->
+<!-- ─────────────────────────────────────── -->
+<div class="feedback-overlay" id="feedback-overlay">
+  <span class="fb-icon"  id="fb-icon">✅</span>
+  <div  class="fb-title" id="fb-title">¡Excelente!</div>
+  <div  class="fb-hint"  id="fb-hint"></div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: ZONE WIN                       -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen" id="s-zone-win">
+  <div class="zwin-inner">
+    <span class="zwin-celebrate">🎉</span>
+    <h2 class="zwin-title">¡Zona Completada!</h2>
+    <div class="defeated-wrap">
+      <span class="defeated-emoji" id="zw-memoji">🐉</span>
+      <p   class="defeated-text">¡Derrotaste al <strong id="zw-mname">Dragón</strong>!</p>
+    </div>
+    <div class="stars-row" id="stars-row">
+      <span class="star-item">⭐</span>
+      <span class="star-item">⭐</span>
+      <span class="star-item">⭐</span>
+    </div>
+    <p class="pts-earned">+<span id="zw-pts">0</span> puntos</p>
+    <div class="zwin-btns">
+      <button class="btn btn-primary"   id="btn-next-zone">Siguiente Zona →</button>
+      <button class="btn btn-secondary" id="btn-win-map">🗺️ Volver al Mapa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: GAME OVER                      -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen" id="s-gameover">
+  <div class="go-inner">
+    <span class="go-icon">💀</span>
+    <h2 class="go-title">¡Game Over!</h2>
+    <p class="go-msg" id="go-msg">¡No te rindas, inténtalo de nuevo!</p>
+    <div class="go-btns">
+      <button class="btn btn-primary"   id="btn-retry">🔄 ¡Intentar de nuevo!</button>
+      <button class="btn btn-secondary" id="btn-go-map">🗺️ Volver al Mapa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- SCREEN: FINAL WIN                      -->
+<!-- ─────────────────────────────────────── -->
+<div class="screen" id="s-win">
+  <div id="confetti-container"></div>
+  <div class="fw-inner">
+    <span class="trophy">🏆</span>
+    <h1 class="fw-title">¡FELICITACIONES!</h1>
+    <p class="fw-name" id="fw-name">¡Eres un maestro del inglés!</p>
+    <div class="fw-scorebox">⭐ <span id="fw-score">0</span> pts</div>
+    <div class="fw-zones">🌿 🏘️ 🌊 🏰</div>
+    <p class="fw-sub">¡Completaste las 4 zonas!</p>
+    <button class="btn btn-primary" id="btn-play-again">🔄 Jugar de nuevo</button>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!-- FOOTER                                 -->
+<!-- ─────────────────────────────────────── -->
+<footer class="site-footer">
+  Desarrollado con <span class="heart">♥</span> por <a href="https://tresquince.cl" target="_blank" rel="noopener">tresquince.cl</a>
+</footer>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SCRIPT                                 -->
+<!-- ═══════════════════════════════════════ -->
+<script>
+/* ──────────────────────────────────────────
+   GAME DATA
+────────────────────────────────────────── */
+const ZONES = [
+  {
+    id: 0, name: "Bosque Encantado", emoji: "🌿",
+    battleBg: "radial-gradient(ellipse at top,#0d2b1a 0%,#1b4332 100%)",
+    cardBg:   "linear-gradient(135deg,#1b4332,#2d6a4f)",
+    monster: "🐉", monsterName: "Dragón Hoja", monsterMaxHP: 5,
+    unlocked: true, stars: 0, theme: "Animales y Colores",
+    questions: [
+      { q:"What animal is this? 🐱",              opts:["Cat","Dog","Bird","Fish"],      a:"Cat",      hint:"¡Este animal dice 'miau'!" },
+      { q:"What color is this? 🔴",               opts:["Red","Blue","Green","Yellow"],  a:"Red",      hint:"¡Es el color del tomate!" },
+      { q:"What animal says 'Woof'? 🐾",          opts:["Dog","Cat","Duck","Cow"],       a:"Dog",      hint:"¡El mejor amigo del humano!" },
+      { q:"What fruit is this? 🍎",               opts:["Apple","Orange","Banana","Grape"],a:"Apple",  hint:"¡Newton la descubrió!" },
+      { q:"What color is the sun? ☀️",            opts:["Yellow","Blue","Red","Green"],  a:"Yellow",   hint:"¡El sol brilla en este color!" },
+      { q:"What animal is this? 🐘",              opts:["Elephant","Horse","Bear","Tiger"],a:"Elephant",hint:"¡El más grande de la tierra!" },
+      { q:"What color is the sky? 🌤️",           opts:["Blue","Red","Purple","Orange"], a:"Blue",     hint:"¡Mira hacia arriba!" },
+      { q:"What animal is this? 🐸",              opts:["Frog","Fish","Snake","Lizard"], a:"Frog",     hint:"¡Vive cerca del agua y salta!" },
+      { q:"What is the color of grass? 🌿",       opts:["Green","Brown","Yellow","White"],a:"Green",   hint:"¡El color de las plantas!" },
+      { q:"What animal is this? 🐧",              opts:["Penguin","Duck","Owl","Eagle"], a:"Penguin",  hint:"¡Vive en el Polo Sur!" }
+    ]
+  },
+  {
+    id: 1, name: "Aldea de Números", emoji: "🏘️",
+    battleBg: "radial-gradient(ellipse at top,#3b1a04 0%,#7f4f24 100%)",
+    cardBg:   "linear-gradient(135deg,#7f4f24,#e76f51)",
+    monster: "👺", monsterName: "Goblin Contador", monsterMaxHP: 5,
+    unlocked: false, stars: 0, theme: "Números y Cuerpo",
+    questions: [
+      { q:"How many? 🍕🍕🍕",                     opts:["Three","Two","Four","One"],      a:"Three",  hint:"Cuenta: 1, 2, 3..." },
+      { q:"What number comes after 4?",           opts:["Five","Three","Six","Two"],      a:"Five",   hint:"1, 2, 3, 4, ___" },
+      { q:"What body part is this? 👁️",          opts:["Eye","Ear","Nose","Mouth"],      a:"Eye",    hint:"¡Lo usas para ver!" },
+      { q:"How many fingers on one hand? ✋",     opts:["Five","Four","Six","Three"],     a:"Five",   hint:"Cuenta los dedos de tu mano" },
+      { q:"What body part is this? 👂",           opts:["Ear","Eye","Nose","Hand"],       a:"Ear",    hint:"¡Lo usas para escuchar!" },
+      { q:"What is 2 + 3?",                       opts:["Five","Four","Six","Seven"],     a:"Five",   hint:"¡Usa los dedos!" },
+      { q:"How many? ⭐⭐⭐⭐⭐⭐⭐",           opts:["Seven","Six","Eight","Five"],    a:"Seven",  hint:"Cuenta cada estrella" },
+      { q:"What body part do you use to smell? 👃",opts:["Nose","Ear","Eye","Mouth"],    a:"Nose",   hint:"¡Lo usas para oler flores!" },
+      { q:"What is 10 - 4?",                      opts:["Six","Five","Seven","Four"],     a:"Six",    hint:"Quítale 4 a 10" },
+      { q:"How many legs does a spider have? 🕷️", opts:["Eight","Six","Four","Ten"],     a:"Eight",  hint:"¡Más que los insectos!" }
+    ]
+  },
+  {
+    id: 2, name: "Océano de Frases", emoji: "🌊",
+    battleBg: "radial-gradient(ellipse at top,#020b2e 0%,#0077b6 100%)",
+    cardBg:   "linear-gradient(135deg,#03045e,#0077b6)",
+    monster: "🐙", monsterName: "Kraken Parlanchín", monsterMaxHP: 5,
+    unlocked: false, stars: 0, theme: "Saludos y Frases",
+    questions: [
+      { q:'Complete: "Hello! My ___ is Sam"',      opts:["Name","Age","Friend","School"],  a:"Name",         hint:"¡Así te presentas!" },
+      { q:'Complete: "How ___ you?"',              opts:["Are","Is","Am","Be"],            a:"Are",          hint:"¿Cómo estás? = How are you?" },
+      { q:'What does "Good morning" mean?',        opts:["Buenos días","Buenas noches","Buenas tardes","Adiós"],a:"Buenos días",hint:"¡Saludo de la mañana!" },
+      { q:'Complete: "I ___ 8 years old"',         opts:["Am","Is","Are","Be"],            a:"Am",           hint:"Yo = I → Soy = AM" },
+      { q:'What does "Thank you" mean?',           opts:["Gracias","De nada","Por favor","Perdón"],a:"Gracias",hint:"¡Sé agradecido!" },
+      { q:'What does "Please" mean?',              opts:["Por favor","Gracias","Perdón","Hola"],a:"Por favor", hint:"¡Pide con educación!" },
+      { q:'What does "Goodbye" mean?',             opts:["Adiós","Hola","Gracias","Por favor"],a:"Adiós",    hint:"¡Lo dices al irte!" },
+      { q:'Complete: "I ___ from Mexico"',         opts:["Am","Is","Are","Be"],            a:"Am",           hint:"Yo = I → AM" },
+      { q:'What does "Sorry" mean?',               opts:["Lo siento","Gracias","Hola","Adiós"],a:"Lo siento", hint:"¡Lo dices cuando te equivocas!" },
+      { q:'Complete: "She ___ my friend"',         opts:["Is","Am","Are","Be"],            a:"Is",           hint:"Ella → IS" }
+    ]
+  },
+  {
+    id: 3, name: "Castillo Gramático", emoji: "🏰",
+    battleBg: "radial-gradient(ellipse at top,#130023 0%,#7b2d8b 100%)",
+    cardBg:   "linear-gradient(135deg,#240046,#7b2d8b)",
+    monster: "🧙", monsterName: "Mago Gramático", monsterMaxHP: 5,
+    unlocked: false, stars: 0, theme: "Gramática Básica",
+    questions: [
+      { q:'Complete: "The cat ___ sleeping"',      opts:["Is","Are","Am","Be"],            a:"Is",     hint:"Ella/Él → IS" },
+      { q:'Plural of "cat" 🐱',                    opts:["Cats","Cates","Cat","Catz"],     a:"Cats",   hint:"¡Agrega -S al final!" },
+      { q:'Complete: "I ___ apples" (me gustan)',  opts:["Like","Likes","Liked","Liking"], a:"Like",   hint:"I (yo) + verbo base" },
+      { q:'Plural of "dog" 🐶',                    opts:["Dogs","Doges","Dog","Dogz"],     a:"Dogs",   hint:"¡Solo agrega -S!" },
+      { q:'Complete: "She ___ to school"',         opts:["Goes","Go","Going","Gone"],      a:"Goes",   hint:"She/He → añade -ES" },
+      { q:'Complete: "They ___ happy" 😊😊',       opts:["Are","Is","Am","Be"],            a:"Are",    hint:"They (ellos) → ARE" },
+      { q:'Opposite of "big" 🔵🔴',               opts:["Small","Tall","Fast","Hot"],     a:"Small",  hint:"Grande ↔ ___" },
+      { q:'Complete: "We ___ playing soccer" ⚽',  opts:["Are","Is","Am","Be"],            a:"Are",    hint:"We (nosotros) → ARE" },
+      { q:'Plural of "box" 📦',                    opts:["Boxes","Boxs","Box","Boxez"],    a:"Boxes",  hint:"Termina en -x → agrega -ES" },
+      { q:'Opposite of "hot" 🔥',                  opts:["Cold","Warm","Fast","Big"],      a:"Cold",   hint:"Caliente ↔ ___" }
+    ]
+  }
+];
+
+const CHARS      = ["🧒","🧝‍♀️","🦸"];
+const CHAR_NAMES = ["Héroe","Elfa","Súper"];
+const OK_MSGS    = ["¡Excelente! 🎉","¡Muy bien! 👏","¡Correcto! ⭐","¡Genial! 🌟","¡Perfecto! 🏆","¡Increíble! 🔥"];
+const BAD_MSGS   = ["¡Casi! 😅","¡Inténtalo! 💪","¡No te rindas! 🔥","¡Sigue adelante! 💫","¡La próxima! 🎯"];
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let G = {
+  name: "Aventurero", char: 0, score: 0,
+  zones: ZONES.map(z => ({ ...z, stars: 0, unlocked: z.id === 0 })),
+  currentZoneId: 0,
+  playerHP: 3, monsterHP: 5,
+  questions: [], qIndex: 0, wrongCount: 0,
+  answering: false
+};
+
+/* ──────────────────────────────────────────
+   AUDIO (Web Audio API — no external files)
+────────────────────────────────────────── */
+let audioCtx;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function tone(freq, dur, type = 'sine', vol = 0.25) {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch(_) {}
+}
+const snd = {
+  click:   () => tone(800, .06, 'sine', .15),
+  correct: () => { tone(523,.15); setTimeout(()=>tone(659,.15),120); setTimeout(()=>tone(784,.28),240); },
+  wrong:   () => { tone(200,.25,'sawtooth',.18); setTimeout(()=>tone(140,.25,'sawtooth',.18),200); },
+  win:     () => [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.3),i*130)),
+  star:    () => tone(1046,.2,'sine',.2)
+};
+
+/* ──────────────────────────────────────────
+   HELPERS
+────────────────────────────────────────── */
+const $  = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
+function showScreen(id) {
+  $$('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function shuffle(arr) { return [...arr].sort(() => Math.random() - .5); }
+function rand(arr)    { return arr[Math.floor(Math.random() * arr.length)]; }
+function hearts(n, max) { return '❤️'.repeat(n) + '🖤'.repeat(max - n); }
+
+/* ──────────────────────────────────────────
+   STARFIELD
+────────────────────────────────────────── */
+function initStarfield() {
+  const sf = $('starfield');
+  for (let i = 0; i < 90; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const s = Math.random() * 3 + 1;
+    el.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*3}s;animation-delay:-${Math.random()*4}s`;
+    sf.appendChild(el);
+  }
+}
+
+/* ──────────────────────────────────────────
+   HOME
+────────────────────────────────────────── */
+function initHome() {
+  const saved = localStorage.getItem('eq-name');
+  if (saved) $('name-input').value = saved;
+
+  $$('.char-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      snd.click();
+      $$('.char-btn').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      G.char = +btn.dataset.char;
+    });
+  });
+
+  $('btn-start').addEventListener('click', () => {
+    snd.click();
+    const n = $('name-input').value.trim() || 'Aventurero';
+    G.name = n;
+    localStorage.setItem('eq-name', n);
+    loadProgress();
+    showMap();
+  });
+
+  $('name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') $('btn-start').click();
+  });
+}
+
+/* ──────────────────────────────────────────
+   MAP
+────────────────────────────────────────── */
+function showMap() {
+  $('map-char').textContent  = CHARS[G.char];
+  $('map-name').textContent  = G.name;
+  $('map-score').textContent = G.score;
+  renderZones();
+  showScreen('s-map');
+}
+
+function renderZones() {
+  const grid = $('zones-grid');
+  grid.innerHTML = '';
+  G.zones.forEach(z => {
+    const card = document.createElement('div');
+    card.className = 'zone-card' + (z.unlocked ? '' : ' locked');
+    card.style.background = z.cardBg;
+    const stars = '⭐'.repeat(z.stars) + '☆'.repeat(3 - z.stars);
+    card.innerHTML = `
+      ${!z.unlocked ? '<span class="lock-icon">🔒</span>' : ''}
+      ${z.stars > 0  ? '<span class="cleared-tag">✓ Completa</span>' : ''}
+      <span class="zc-emoji">${z.emoji}</span>
+      <span class="zc-name">${z.name}</span>
+      <span class="zc-theme">${z.theme}</span>
+      <span class="zc-stars">${stars}</span>
+    `;
+    if (z.unlocked) {
+      card.addEventListener('click', () => { snd.click(); showIntro(z.id); });
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* ──────────────────────────────────────────
+   INTRO
+────────────────────────────────────────── */
+function showIntro(zid) {
+  G.currentZoneId = zid;
+  const z = G.zones[zid];
+  $('intro-zname').textContent   = z.emoji + ' ' + z.name;
+  $('intro-tag').textContent     = z.theme;
+  $('intro-player').textContent  = CHARS[G.char];
+  $('intro-pname').textContent   = G.name;
+  $('intro-monster').textContent = z.monster;
+  $('intro-mname').textContent   = z.monsterName;
+  $('intro-mhp').textContent     = '❤️'.repeat(z.monsterMaxHP);
+  showScreen('s-intro');
+}
+
+$('btn-fight').addEventListener('click', () => { snd.click(); startBattle(); });
+$('btn-back-intro').addEventListener('click', () => { snd.click(); showMap(); });
+
+/* ──────────────────────────────────────────
+   BATTLE
+────────────────────────────────────────── */
+function startBattle() {
+  const z = G.zones[G.currentZoneId];
+  G.playerHP    = 3;
+  G.monsterHP   = z.monsterMaxHP;
+  G.wrongCount  = 0;
+  G.answering   = false;
+  G.questions   = shuffle(z.questions).slice(0, 5);
+  G.qIndex      = 0;
+
+  // Update static elements
+  $('b-pchar').textContent   = CHARS[G.char];
+  $('b-pname').textContent   = G.name;
+  $('b-psprite').textContent = CHARS[G.char];
+  $('b-psname').textContent  = G.name;
+  $('b-mchar').textContent   = z.monster;
+  $('b-mname').textContent   = z.monsterName;
+  $('b-msprite').textContent = z.monster;
+  $('b-msname').textContent  = z.monsterName;
+  $('b-zicon').textContent   = z.emoji;
+
+  $('s-battle').style.background = z.battleBg;
+
+  updateHPDisplay();
+  showQuestion();
+  showScreen('s-battle');
+}
+
+function updateHPDisplay() {
+  const z = G.zones[G.currentZoneId];
+  $('b-php').textContent = hearts(G.playerHP, 3);
+  $('b-mhp').textContent = hearts(G.monsterHP, z.monsterMaxHP);
+}
+
+function showQuestion() {
+  const q = G.questions[G.qIndex];
+  $('b-progress').textContent = `${G.qIndex + 1} / ${G.questions.length}`;
+  $('b-qtext').textContent    = q.q;
+
+  const shuffled = shuffle(q.opts);
+  const btns = $$('.opt-btn');
+  btns.forEach((btn, i) => {
+    btn.textContent = shuffled[i];
+    btn.disabled    = false;
+    btn.classList.remove('correct', 'wrong');
+    btn.style.opacity = '1';
+    btn.onclick = () => handleAnswer(shuffled[i], q.a, q.hint);
+  });
+  G.answering = false;
+}
+
+function handleAnswer(selected, correct, hint) {
+  if (G.answering) return;
+  G.answering = true;
+
+  $$('.opt-btn').forEach(b => b.disabled = true);
+  const isOK = selected === correct;
+
+  if (isOK) {
+    snd.correct();
+    G.monsterHP = Math.max(0, G.monsterHP - 1);
+    $$('.opt-btn').forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+    const ms = $('b-msprite');
+    ms.classList.add('shake-me');
+    setTimeout(() => ms.classList.remove('shake-me'), 600);
+    showFeedback(true, rand(OK_MSGS), '');
+  } else {
+    snd.wrong();
+    G.wrongCount++;
+    G.playerHP = Math.max(0, G.playerHP - 1);
+    $$('.opt-btn').forEach(b => {
+      if (b.textContent === selected) b.classList.add('wrong');
+      if (b.textContent === correct)  b.classList.add('correct');
+    });
+    const ps = $('b-psprite');
+    ps.classList.add('shake-me');
+    setTimeout(() => ps.classList.remove('shake-me'), 600);
+    showFeedback(false, rand(BAD_MSGS), hint);
+  }
+
+  updateHPDisplay();
+}
+
+/* ──────────────────────────────────────────
+   FEEDBACK
+────────────────────────────────────────── */
+function showFeedback(ok, msg, hint) {
+  const ov   = $('feedback-overlay');
+  $('fb-icon').textContent   = ok ? '✅' : '❌';
+  $('fb-title').textContent  = msg;
+  $('fb-title').className    = 'fb-title ' + (ok ? 'ok' : 'bad');
+  $('fb-hint').textContent   = hint;
+  ov.classList.add('show');
+
+  setTimeout(() => {
+    ov.classList.remove('show');
+
+    if (G.playerHP <= 0) { setTimeout(showGameOver, 300); return; }
+    if (G.monsterHP <= 0){ setTimeout(showZoneWin,  300); return; }
+
+    G.qIndex++;
+    if (G.qIndex >= G.questions.length) { setTimeout(showZoneWin, 300); return; }
+
+    showQuestion();
+  }, ok ? 1800 : 2600);
+}
+
+/* ──────────────────────────────────────────
+   ZONE WIN
+────────────────────────────────────────── */
+function showZoneWin() {
+  snd.win();
+  const z = G.zones[G.currentZoneId];
+
+  // Stars: based on player HP remaining
+  const stars = G.playerHP >= 3 ? 3 : G.playerHP >= 2 ? 2 : 1;
+  z.stars = Math.max(z.stars, stars);
+
+  // Points
+  const correct = G.questions.length - G.wrongCount;
+  const pts     = stars * 100 + correct * 20;
+  G.score += pts;
+
+  // Unlock next
+  const nid = G.currentZoneId + 1;
+  if (nid < G.zones.length) G.zones[nid].unlocked = true;
+
+  saveProgress();
+
+  // UI
+  $('zw-memoji').textContent = z.monster;
+  $('zw-mname').textContent  = z.monsterName;
+  $('zw-pts').textContent    = pts;
+
+  // Stars row animation
+  const row = $('stars-row');
+  row.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const s = document.createElement('span');
+    s.className   = 'star-item';
+    s.textContent = i < stars ? '⭐' : '☆';
+    row.appendChild(s);
+    if (i < stars) setTimeout(() => snd.star(), 100 + i * 200);
+  }
+
+  // Next button label
+  if (nid < G.zones.length) {
+    $('btn-next-zone').textContent = 'Siguiente Zona →';
+  } else {
+    $('btn-next-zone').textContent = '🏆 ¡Ver Resultado Final!';
+  }
+
+  showScreen('s-zone-win');
+}
+
+$('btn-next-zone').addEventListener('click', () => {
+  snd.click();
+  const nid = G.currentZoneId + 1;
+  if (nid < G.zones.length) showIntro(nid);
+  else                       showFinalWin();
+});
+
+$('btn-win-map').addEventListener('click', () => { snd.click(); showMap(); });
+
+/* ──────────────────────────────────────────
+   GAME OVER
+────────────────────────────────────────── */
+function showGameOver() {
+  const z = G.zones[G.currentZoneId];
+  $('go-msg').innerHTML =
+    `¡El <strong>${z.monsterName}</strong> fue demasiado fuerte esta vez...<br>¡Pero tú puedes! 💪`;
+  showScreen('s-gameover');
+}
+
+$('btn-retry').addEventListener('click', () => { snd.click(); startBattle(); });
+$('btn-go-map').addEventListener('click', () => { snd.click(); showMap(); });
+
+/* ──────────────────────────────────────────
+   FINAL WIN
+────────────────────────────────────────── */
+function showFinalWin() {
+  snd.win(); setTimeout(snd.win, 700);
+  $('fw-name').textContent  = `¡${G.name} es un maestro del inglés!`;
+  $('fw-score').textContent = G.score;
+  spawnConfetti();
+  showScreen('s-win');
+}
+
+function spawnConfetti() {
+  const c = $('confetti-container');
+  c.innerHTML = '';
+  const cols = ['#ffd166','#ef233c','#06d6a0','#4cc9f0','#c77dff','#f4a261','#fff'];
+  for (let i = 0; i < 90; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    const sz = 6 + Math.random() * 10;
+    p.style.cssText = `
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      width:${sz}px; height:${sz}px;
+      left:${Math.random()*100}%;
+      animation-duration:${3+Math.random()*3}s;
+      animation-delay:-${Math.random()*2}s;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+    `;
+    c.appendChild(p);
+  }
+}
+
+$('btn-play-again').addEventListener('click', () => {
+  snd.click();
+  G.zones  = ZONES.map(z => ({ ...z, stars: 0, unlocked: z.id === 0 }));
+  G.score  = 0;
+  localStorage.removeItem('eq-progress');
+  showMap();
+});
+
+/* ──────────────────────────────────────────
+   SAVE / LOAD
+────────────────────────────────────────── */
+function saveProgress() {
+  localStorage.setItem('eq-progress', JSON.stringify({
+    score: G.score,
+    zones: G.zones.map(z => ({ id: z.id, stars: z.stars, unlocked: z.unlocked }))
+  }));
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem('eq-progress');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    G.score = d.score || 0;
+    d.zones.forEach(sv => {
+      const z = G.zones.find(z => z.id === sv.id);
+      if (z) { z.stars = sv.stars; z.unlocked = sv.unlocked; }
+    });
+  } catch(_) {}
+}
+
+/* ──────────────────────────────────────────
+   INIT
+────────────────────────────────────────── */
+initStarfield();
+initHome();
+</script>
+</body>
+</html>
