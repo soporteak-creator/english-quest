@@ -2,8 +2,28 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>English Quest ⚔️</title>
+
+  <!-- ═══ PWA META ═══ -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6c63ff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="English Quest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <!-- ═══ SEO / SHARE ═══ -->
+  <meta name="description" content="¡Aprende inglés en una aventura épica! 8 zonas, 80 preguntas, batallas contra monstruos.">
+  <meta property="og:title"       content="English Quest ⚔️">
+  <meta property="og:description" content="¡Aprende inglés jugando! Aventura RPG educativa.">
+  <meta property="og:image"       content="icons/icon-512.png">
+  <meta property="og:type"        content="website">
   <style>
     /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -149,15 +169,15 @@
     .map-title { font-size: 22px; font-weight: 800; margin-bottom: 16px; text-align: center; }
     .zones-grid {
       width: 100%; max-width: 560px;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
     }
     .zone-card {
-      border-radius: 20px; padding: 18px 14px;
+      border-radius: 20px; padding: 14px 10px;
       cursor: pointer; transition: all .22s;
       position: relative; overflow: hidden;
       border: 2px solid transparent;
-      min-height: 148px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      min-height: 130px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
     }
     .zone-card:not(.locked):hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 30px rgba(0,0,0,.4); }
     .zone-card.locked { filter: grayscale(.75) brightness(.45); cursor: not-allowed; }
@@ -565,8 +585,8 @@
     <h1 class="fw-title">¡FELICITACIONES!</h1>
     <p class="fw-name" id="fw-name">¡Eres un maestro del inglés!</p>
     <div class="fw-scorebox">⭐ <span id="fw-score">0</span> pts</div>
-    <div class="fw-zones">🌿 🏘️ 🌊 🏰</div>
-    <p class="fw-sub">¡Completaste las 4 zonas!</p>
+    <div class="fw-zones">🌿 🏘️ 🌊 🏰 🍕 🦁 🚀 ⚡</div>
+    <p class="fw-sub">¡Completaste las 8 zonas!</p>
     <button class="btn btn-primary" id="btn-play-again">🔄 Jugar de nuevo</button>
   </div>
 </div>
@@ -660,6 +680,82 @@ const ZONES = [
       { q:'Complete: "We ___ playing soccer" ⚽',  opts:["Are","Is","Am","Be"],            a:"Are",    hint:"We (nosotros) → ARE" },
       { q:'Plural of "box" 📦',                    opts:["Boxes","Boxs","Box","Boxez"],    a:"Boxes",  hint:"Termina en -x → agrega -ES" },
       { q:'Opposite of "hot" 🔥',                  opts:["Cold","Warm","Fast","Big"],      a:"Cold",   hint:"Caliente ↔ ___" }
+    ]
+  },
+  {
+    id: 4, name: "Cocina Mágica", emoji: "🍕",
+    battleBg: "radial-gradient(ellipse at top,#2b1a00 0%,#8b4513 100%)",
+    cardBg:   "linear-gradient(135deg,#7c3d00,#e8871a)",
+    monster: "🍖", monsterName: "Chef Malvado", monsterMaxHP: 6,
+    unlocked: false, stars: 0, theme: "Comida y Bebida",
+    questions: [
+      { q:'What food is this? 🍕',                  opts:["Pizza","Burger","Pasta","Cake"],   a:"Pizza",  hint:"¡Tiene queso y tomate!" },
+      { q:'What drink is this? 🥛',                 opts:["Milk","Water","Juice","Tea"],      a:"Milk",   hint:"¡Viene de las vacas!" },
+      { q:'What fruit is this? 🍌',                 opts:["Banana","Mango","Lemon","Peach"],  a:"Banana", hint:"¡Es amarilla y alargada!" },
+      { q:'What food is this? 🍣',                  opts:["Sushi","Pizza","Tacos","Rice"],    a:"Sushi",  hint:"¡Es comida japonesa!" },
+      { q:'What is this? 🥚',                       opts:["Egg","Cheese","Bread","Butter"],   a:"Egg",    hint:"¡Los pollos los ponen!" },
+      { q:'What drink is this? 🍵',                 opts:["Tea","Coffee","Juice","Water"],    a:"Tea",    hint:"¡Se toma caliente con hojas!" },
+      { q:'What food is this? 🍞',                  opts:["Bread","Cake","Cookie","Muffin"],  a:"Bread",  hint:"¡Lo usas para hacer sándwiches!" },
+      { q:'What vegetable is this? 🥕',             opts:["Carrot","Potato","Onion","Pepper"],a:"Carrot", hint:"¡Los conejos la adoran!" },
+      { q:'What is this? 🧁',                       opts:["Cupcake","Cookie","Cake","Muffin"],a:"Cupcake",hint:"¡Pequeño pastel con crema!" },
+      { q:'What food is this? 🍔',                  opts:["Burger","Pizza","Hot dog","Taco"], a:"Burger", hint:"¡Tiene dos panes y carne!" }
+    ]
+  },
+  {
+    id: 5, name: "Jungla Salvaje", emoji: "🦁",
+    battleBg: "radial-gradient(ellipse at top,#0d2000 0%,#2d5a1b 100%)",
+    cardBg:   "linear-gradient(135deg,#1a4a00,#4a7c59)",
+    monster: "🦍", monsterName: "Gorila Guardián", monsterMaxHP: 6,
+    unlocked: false, stars: 0, theme: "Animales Salvajes",
+    questions: [
+      { q:'What animal is this? 🦁',                opts:["Lion","Tiger","Cheetah","Jaguar"], a:"Lion",   hint:"¡El rey de la selva!" },
+      { q:'What animal is this? 🐍',                opts:["Snake","Lizard","Worm","Dragon"],  a:"Snake",  hint:"¡No tiene patas y se arrastra!" },
+      { q:'What animal is this? 🦒',                opts:["Giraffe","Camel","Deer","Horse"],  a:"Giraffe",hint:"¡Tiene el cuello más largo!" },
+      { q:'What animal is this? 🐊',                opts:["Crocodile","Lizard","Turtle","Frog"],a:"Crocodile",hint:"¡Tiene dientes gigantes!" },
+      { q:'What animal is this? 🦜',                opts:["Parrot","Eagle","Flamingo","Toucan"],a:"Parrot",hint:"¡Puede imitar la voz humana!" },
+      { q:'What animal is this? 🦓',                opts:["Zebra","Horse","Donkey","Deer"],   a:"Zebra",  hint:"¡Es negro y blanco a rayas!" },
+      { q:'What animal is this? 🦏',                opts:["Rhino","Hippo","Elephant","Bear"], a:"Rhino",  hint:"¡Tiene un cuerno en la nariz!" },
+      { q:'What animal is this? 🐆',                opts:["Cheetah","Leopard","Tiger","Puma"],a:"Cheetah",hint:"¡Es el animal más rápido!" },
+      { q:'What animal is this? 🦛',                opts:["Hippo","Rhino","Elephant","Bear"], a:"Hippo",  hint:"¡Le encanta el barro!" },
+      { q:'What animal is this? 🦅',                opts:["Eagle","Hawk","Falcon","Vulture"], a:"Eagle",  hint:"¡El pájaro más majestuoso!" }
+    ]
+  },
+  {
+    id: 6, name: "Galaxia Espacial", emoji: "🚀",
+    battleBg: "radial-gradient(ellipse at top,#000014 0%,#0a0a3a 100%)",
+    cardBg:   "linear-gradient(135deg,#050520,#1a1a6e)",
+    monster: "👾", monsterName: "Alienígena Jefe", monsterMaxHP: 6,
+    unlocked: false, stars: 0, theme: "Espacio y Ciencia",
+    questions: [
+      { q:'What is this? 🌙',                       opts:["Moon","Star","Sun","Planet"],      a:"Moon",   hint:"¡Brilla de noche!" },
+      { q:'What planet has rings? 🪐',              opts:["Saturn","Jupiter","Mars","Venus"],  a:"Saturn", hint:"¡Tiene anillos de hielo!" },
+      { q:'What is this? ⭐',                       opts:["Star","Sun","Moon","Comet"],        a:"Star",   hint:"¡Brilla en el cielo nocturno!" },
+      { q:'What do astronauts travel in? 🚀',       opts:["Rocket","Plane","Boat","Car"],      a:"Rocket", hint:"¡Va muy muy rápido!" },
+      { q:'What is the center of our solar system?',opts:["Sun","Moon","Earth","Mars"],        a:"Sun",    hint:"¡Nos da luz y calor!" },
+      { q:'What planet do we live on? 🌍',          opts:["Earth","Mars","Venus","Jupiter"],   a:"Earth",  hint:"¡Nuestro hogar!" },
+      { q:'What is this? ☄️',                       opts:["Comet","Star","Meteor","Planet"],   a:"Comet",  hint:"¡Viaja por el espacio con cola!" },
+      { q:'How many planets in our solar system?',  opts:["Eight","Nine","Seven","Ten"],       a:"Eight",  hint:"¡En 2006 quitaron a Plutón!" },
+      { q:'What color is Mars? 🔴',                 opts:["Red","Blue","Green","Orange"],      a:"Red",    hint:"¡El planeta rojo!" },
+      { q:'What is a group of stars called? ✨',    opts:["Constellation","Galaxy","Nebula","Cluster"],a:"Constellation",hint:"¡Forman dibujos en el cielo!" }
+    ]
+  },
+  {
+    id: 7, name: "Tormenta de Verbos", emoji: "⚡",
+    battleBg: "radial-gradient(ellipse at top,#1a0030 0%,#4a0080 100%)",
+    cardBg:   "linear-gradient(135deg,#2d0057,#8400ff)",
+    monster: "🌩️", monsterName: "Tormenta Gramatical", monsterMaxHP: 7,
+    unlocked: false, stars: 0, theme: "Verbos y Tiempo",
+    questions: [
+      { q:'Past tense of "run" 🏃',                 opts:["Ran","Runned","Run","Ranned"],      a:"Ran",    hint:"¡Es irregular! No lleva -ED" },
+      { q:'Past tense of "eat" 🍽️',                opts:["Ate","Eated","Eaten","Eet"],        a:"Ate",    hint:"¡También irregular!" },
+      { q:'What does "jump" mean? 🦘',              opts:["Saltar","Correr","Nadar","Volar"],  a:"Saltar", hint:"¡Los canguros lo hacen!" },
+      { q:'Past tense of "go" 🚶',                  opts:["Went","Goed","Gone","Gooed"],       a:"Went",   hint:"¡Completamente diferente!" },
+      { q:'What does "swim" mean? 🏊',              opts:["Nadar","Correr","Volar","Saltar"],  a:"Nadar",  hint:"¡Lo haces en la piscina!" },
+      { q:'Future: "Tomorrow I ___ eat pizza" 🍕',  opts:["Will","Am","Was","Is"],             a:"Will",   hint:"Futuro en inglés = WILL + verbo" },
+      { q:'Past tense of "see" 👀',                 opts:["Saw","Seed","Seen","Sawed"],        a:"Saw",    hint:"¡Irregular! I saw a movie" },
+      { q:'What does "fly" mean? ✈️',               opts:["Volar","Nadar","Correr","Saltar"],  a:"Volar",  hint:"¡Los pájaros lo hacen!" },
+      { q:'Complete: "Yesterday I ___ to school"',  opts:["Went","Go","Going","Goes"],         a:"Went",   hint:"Yesterday = pasado → Went" },
+      { q:'Past tense of "write" ✍️',               opts:["Wrote","Writed","Written","Writ"],  a:"Wrote",  hint:"¡Irregular! I wrote a letter" }
     ]
   }
 ];
@@ -1066,6 +1162,120 @@ function loadProgress() {
 ────────────────────────────────────────── */
 initStarfield();
 initHome();
+
+/* ──────────────────────────────────────────
+   PWA — Service Worker
+────────────────────────────────────────── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .catch(() => {});
+  });
+}
+
+/* ──────────────────────────────────────────
+   PWA — Botón "Instalar App"
+────────────────────────────────────────── */
+let _deferredPrompt = null;
+const _ib = document.getElementById('install-banner');
+const _ibtn = document.getElementById('btn-install');
+const _idismiss = document.getElementById('btn-install-dismiss');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  if (_ib) _ib.classList.add('show');
+});
+
+if (_ibtn) {
+  _ibtn.addEventListener('click', async () => {
+    if (!_deferredPrompt) return;
+    _deferredPrompt.prompt();
+    const { outcome } = await _deferredPrompt.userChoice;
+    _deferredPrompt = null;
+    if (_ib) _ib.classList.remove('show');
+  });
+}
+if (_idismiss) {
+  _idismiss.addEventListener('click', () => {
+    if (_ib) _ib.classList.remove('show');
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  if (_ib) _ib.classList.remove('show');
+});
+
+/* ──────────────────────────────────────────
+   PROTECCIÓN DE CÓDIGO
+────────────────────────────────────────── */
+(function _protect() {
+  // 1. Desactivar clic derecho
+  document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // 2. Desactivar selección de texto
+  document.addEventListener('selectstart', e => e.preventDefault());
+
+  // 3. Bloquear atajos de teclado (DevTools, Ver fuente, Guardar)
+  document.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(k)) ||
+      (e.ctrlKey && ['u','s','a'].includes(k)) ||
+      (e.metaKey && e.altKey && ['i','j','c'].includes(k)) ||
+      (e.metaKey && ['u','s'].includes(k))
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  });
+
+  // 4. Deshabilitar drag de elementos
+  document.addEventListener('dragstart', e => e.preventDefault());
+
+  // 5. Marca de copyright oculta en consola
+  setTimeout(() => {
+    try {
+      console.log('%c© English Quest — tresquince.cl\n%cCódigo protegido. Uso no autorizado prohibido.',
+        'color:#6c63ff;font-size:18px;font-weight:bold',
+        'color:#999;font-size:12px');
+    } catch(_) {}
+  }, 500);
+})();
 </script>
+
+<!-- ═══ PWA INSTALL BANNER ═══ -->
+<div id="install-banner" style="
+  position:fixed; bottom:60px; left:50%; transform:translateX(-50%);
+  z-index:9999; width:calc(100% - 32px); max-width:420px;
+  background:linear-gradient(135deg,#6c63ff,#c77dff);
+  border-radius:20px; padding:16px 18px;
+  display:none; align-items:center; gap:12px;
+  box-shadow:0 8px 32px rgba(108,99,255,.5);
+  animation: slideUp .4s ease;
+">
+<style>
+  #install-banner.show { display:flex; }
+  @keyframes slideUp { from{transform:translateX(-50%) translateY(20px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+</style>
+  <span style="font-size:34px;flex-shrink:0">📲</span>
+  <div style="flex:1">
+    <div style="font-size:14px;font-weight:800;color:#fff">¡Instala English Quest!</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">Juega sin internet, directo desde tu pantalla</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+    <button id="btn-install" style="
+      background:#fff;color:#6c63ff;border:none;border-radius:10px;
+      padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;
+    ">Instalar</button>
+    <button id="btn-install-dismiss" style="
+      background:transparent;border:none;color:rgba(255,255,255,.7);
+      font-size:11px;cursor:pointer;text-align:center;
+    ">Ahora no</button>
+  </div>
+</div>
+
 </body>
 </html>
